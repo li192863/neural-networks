@@ -8,7 +8,7 @@ from tqdm import tqdm
 from model import NeuralNetwork
 
 DATASET = datasets.CIFAR10
-DEFAULT_EPOCHS = 2
+DEFAULT_EPOCHS = 10
 DEFAULT_BATCH_SIZE = 32
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_SAVE_PATH = 'weights/model34.pth'
