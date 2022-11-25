@@ -133,3 +133,5 @@ dmypy.json
 
 # weights
 *.pth
+/yolov3/VOCdevkit/
+/yolov3/logs/

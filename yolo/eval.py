@@ -3,7 +3,7 @@ import random
 import torch
 from torchvision import datasets, transforms
 
-from model import NeuralNetwork
+from model import Yolo
 
 DEFAULT_MODEL_PATH = 'weights/model34.pth'
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
