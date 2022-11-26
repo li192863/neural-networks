@@ -12,7 +12,7 @@ from util.util import get_classes, get_anchors
 
 INPUT_SHAPE = [416, 416]  # height, width
 ANCHORS_MASK = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
-DEFAULT_EPOCHS = 20
+DEFAULT_EPOCHS = 30
 DEFAULT_BATCH_SIZE = 4
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_SAVE_PATH = 'data/fmd_model.pth'

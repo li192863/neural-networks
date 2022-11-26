@@ -13,7 +13,7 @@ else:
     import xml.etree.ElementTree as ET
 
 DS_CLASSES = ('with_mask', 'without_mask', 'mask_weared_incorrect')  # 数据集类型
-INPUT_SHAPE = [400, 500]  # height, width
+INPUT_SHAPE = [416, 416]  # height, width
 
 class BoundingBox(object):
     """

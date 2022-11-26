@@ -5,7 +5,7 @@ import torch
 import numpy as np
 from PIL import Image, ImageFont, ImageDraw
 
-from net.yolo import YoloBody
+from net.body import YoloBody
 from util.util import get_classes, get_anchors, show_config, cvtColor, resize_image, preprocess_input
 from util.util_bbox import DecodeBox
 
@@ -168,6 +168,7 @@ class Yolo(object):
 
 
 if __name__ == '__main__':
-    yolo = Yolo(fuck=123)
-    print(yolo.get_defaults('fuck'))
-    yolo.detect_image(Image.fromarray(np.random.randn(416, 416) * 255))
+    yolo = Yolo(test=123)
+    print(yolo.get_defaults('test'))
+    image = yolo.detect_image(Image.fromarray(np.random.randn(416, 416) * 255))
+    image.show()
