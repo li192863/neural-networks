@@ -171,7 +171,7 @@ def NeuralNetwork(pretrained=True):
     # model = ResNet50()
     if pretrained:
         model.load_state_dict(torch.load('weights/resnet34-b627a593.pth'), strict=False)  # 加载预训练权重
-        # model.load_state_dict(torch.load("weights/resnet50-19c8e357.pth"), strict=False)
+        # model.load_state_dict(torch.load("data/resnet50-19c8e357.pth"), strict=False)
     in_channels = model.fc.in_features  # 获得最后fc层的in_features参数
     model.fc = nn.Linear(in_channels, 10)  # 改变原网络最后一层参数
     return model

@@ -49,7 +49,7 @@ def parse_opt():
     :return:
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model-path', default=DEFAULT_MODEL_PATH, help='model weights path')
+    parser.add_argument('--model-path', default=DEFAULT_MODEL_PATH, help='model data path')
     parser.add_argument('--device', default=DEFAULT_DEVICE, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     return parser.parse_args()
 

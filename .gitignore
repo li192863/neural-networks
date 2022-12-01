@@ -131,7 +131,7 @@ dmypy.json
 # PyCharm
 .idea/
 
-# weights
+# data
 *.pth
 /yolov3/VOCdevkit/
 /yolov3/logs/
