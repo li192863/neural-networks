@@ -10,7 +10,7 @@ from mask_rcnn.model import get_model_instance_segmentation
 
 NUM_CLASSES = 2  # background(0) and person(1)
 DATASET_ROOT_PATH = '../../datasets/PennFudanPed/'
-DEFAULT_EPOCHS = 20
+DEFAULT_EPOCHS = 30
 DEFAULT_BATCH_SIZE = 2
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_SAVE_PATH = 'data/model.pth'
@@ -83,8 +83,8 @@ def main(opt):
     model = get_model_instance_segmentation(num_classes).to(opt.device)
     # 参数
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=0.005, momentum=0.9, weight_decay=0.005 / opt.epochs)  # 优化器
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
+    optimizer = torch.optim.SGD(params, lr=0.005, momentum=0.9, weight_decay=0.0005)  # 优化器
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)  # Decays the learning rate of each parameter group by gamma every step_size epochs.
     # 训练
     for epoch in range(opt.epochs):
         opt.epoch = epoch + 1  # 设置当前循环轮次
