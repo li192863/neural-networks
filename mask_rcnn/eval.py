@@ -1,13 +1,12 @@
 import argparse
 import random
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torchvision.transforms.functional as F
-import matplotlib.pyplot as plt
 from torchvision.utils import draw_segmentation_masks
 
-import utils
 from dataset import PennFudanDataset
 from train import get_transform
 from model import get_model_instance_segmentation
@@ -41,6 +40,7 @@ def parse_opt():
     parser.add_argument('--batch-size', type=int, default=DEFAULT_BATCH_SIZE, help='batch size')
     parser.add_argument('--device', default=DEFAULT_DEVICE, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     return parser.parse_args()
+
 
 def show(imgs):
     """
@@ -81,6 +81,7 @@ def main(opt):
         output = draw_segmentation_masks(origin, masks[0].squeeze(), alpha=0.9)
         show([origin, output])
         print(pred[0]['scores'])
+
 
 if __name__ == '__main__':
     opt = parse_opt()

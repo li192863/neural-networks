@@ -4,7 +4,7 @@ from torch import nn
 # 模型
 class NeuralNetwork(nn.Module):
     # 网络结构
-    def __init__(self):
+    def __init__(self, num_classes):
         super(NeuralNetwork, self).__init__()
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
@@ -12,7 +12,7 @@ class NeuralNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),
-            nn.Linear(512, 10),
+            nn.Linear(512, num_classes),
         )
 
     # 前向传播

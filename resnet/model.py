@@ -162,18 +162,15 @@ def ResNet101(num_classes=1000, include_top=True):
 def ResNet152(num_classes=1000, include_top=True):
     return ResNet(Bottleneck, [3, 8, 36, 3], num_classes=num_classes, include_top=include_top)
 
-def NeuralNetwork(pretrained=True):
+def NeuralNetwork(num_classes):
     """
     自定义神经网络 修改了ResNet最后全连接层输出维度
     :return:
     """
-    model = ResNet34()
-    # model = ResNet50()
-    if pretrained:
-        model.load_state_dict(torch.load('weights/resnet34-b627a593.pth'), strict=False)  # 加载预训练权重
-        # model.load_state_dict(torch.load("data/resnet50-19c8e357.pth"), strict=False)
+    model = ResNet18()
+
     in_channels = model.fc.in_features  # 获得最后fc层的in_features参数
-    model.fc = nn.Linear(in_channels, 10)  # 改变原网络最后一层参数
+    model.fc = nn.Linear(in_channels, num_classes)  # 改变原网络最后一层参数
     return model
 
 if __name__ == "__main__":
