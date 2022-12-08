@@ -1,4 +1,5 @@
 import argparse
+import math
 
 import numpy as np
 import torch
@@ -61,7 +62,7 @@ def show_classification_result(images, labels, image_size=None, text_color=None)
 
     # 生成网格图
     nrow = 8
-    # nrow = int(np.ceil(np.sqrt(len(images))))
+    # nrow = int(math.ceil(math.sqrt(len(images))))
     result = make_grid(images, nrow=nrow)
     result = F.to_pil_image(result)
     result.save('result.png')
