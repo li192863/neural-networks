@@ -11,7 +11,6 @@ from dataset import PennFudanDataset
 from train import get_transform
 from model import get_model_instance_segmentation
 
-NUM_CLASSES = 2  # background(0) and person(1)
 DATASET_ROOT_PATH = '../../datasets/PennFudanPed/'
 DEFAULT_MODEL_PATH = 'data/model.pth'
 DEFAULT_BATCH_SIZE = 4
@@ -66,15 +65,19 @@ def main(opt):
     # 数据
     x, y = get_test_data(opt)
     # 模型
-    model = get_model_instance_segmentation(NUM_CLASSES).to(opt.device)
+    classes = ['background', 'person']
+    num_classes = len(classes)
+    model = get_model_instance_segmentation(num_classes).to(opt.device)
     # 参数
     model.load_state_dict(torch.load(opt.model_path))
     # 评估
     model.eval()  # Sets the module in training mode.
     with torch.no_grad():  # Disabling gradient calculation
         pred = model(x)
+
         proba_threshold = 0.5
         score_threshold = 0.75
+        # mask = [out['scores'] > score_threshold for out in pred]
         masks = [out['masks'][out['scores'] > score_threshold] > proba_threshold for out in pred]
 
         origin = x.squeeze().mul(255).byte().cpu()  # tensor, shape: (3, h, w), dtype: uint8, device: cpu

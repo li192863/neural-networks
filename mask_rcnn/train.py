@@ -1,14 +1,14 @@
 import argparse
+import time
 
 import torch
 
-import utils as utils
+import utils
 import transforms as T
 from dataset import PennFudanDataset
 from engine import train_one_epoch, evaluate
 from mask_rcnn.model import get_model_instance_segmentation
 
-NUM_CLASSES = 2  # background(0) and person(1)
 DATASET_ROOT_PATH = '../../datasets/PennFudanPed/'
 DEFAULT_EPOCHS = 30
 DEFAULT_BATCH_SIZE = 2
@@ -55,6 +55,28 @@ def get_dataloader(opt):
     return train_dataloader, test_dataloader
 
 
+def show_time_elapse(start, end, prefix='', suffix=''):
+    """
+    显示运行时间
+    :param start:
+    :param end:
+    :param prefix:
+    :param suffix:
+    :return:
+    """
+    time_elapsed = end - start  # 单位为秒
+    hours = time_elapsed // 3600  # 时
+    minutes = (time_elapsed - hours * 3600) // 60  # 分
+    seconds = (time_elapsed - hours * 3600 - minutes * 60) // 1  # 秒
+    if hours == 0:  # 0 hours x minutes x seconds
+        if minutes == 0:  # 0 hours 0 minutes x seconds
+            print(prefix + f' {seconds:.0f}s ' + suffix)
+        else:  # 0 hours x minutes x seconds
+            print(prefix + f' {minutes:.0f}m {seconds:.0f}s ' + suffix)
+    else:  # x hours x minutes x seconds
+        print(prefix + f' {hours:.0f}h {minutes:.0f}m {seconds:.0f}s ' + suffix)
+
+
 def parse_opt():
     """
     解析命令行参数
@@ -74,12 +96,15 @@ def main(opt):
     :param opt:
     :return:
     """
+    # 计时
+    start = time.time()
     # 设备
     print(f'Using {opt.device} device')
     # 数据
     train_dataloader, test_dataloader = get_dataloader(opt)
     # 模型
-    num_classes = 2
+    classes = ['background', 'person']
+    num_classes = len(classes)
     model = get_model_instance_segmentation(num_classes).to(opt.device)
     # 参数
     params = [p for p in model.parameters() if p.requires_grad]
@@ -87,7 +112,7 @@ def main(opt):
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)  # Decays the learning rate of each parameter group by gamma every step_size epochs.
     # 训练
     for epoch in range(opt.epochs):
-        opt.epoch = epoch + 1  # 设置当前循环轮次
+        opt.epoch = epoch  # 设置当前循环轮次
         train_one_epoch(model, optimizer, train_dataloader, opt.device, opt.epoch, print_freq=10)  # 训练
         lr_scheduler.step()  # 更新学习率
         evaluate(model, test_dataloader, opt.device)  # 测试
@@ -95,11 +120,14 @@ def main(opt):
     # 保存
     torch.save(model.state_dict(), opt.save_path)
     print(f'Saved PyTorch Model State to {opt.save_path}')
+    # 计时
+    show_time_elapse(start, time.time(), 'Training complete in')
 
 
 if __name__ == '__main__':
     opt = parse_opt()
     main(opt)
+
     # # 测试模型
     # model = torchvision.models.detection.fasterrcnn_resnet50_fpn(data='DEFAULT')
     # dataset = PennFudanDataset('../../datasets/PennFudanPed/', get_transform(train=True))
@@ -107,13 +135,13 @@ if __name__ == '__main__':
     #     dataset, batch_size=2, shuffle=True, num_workers=4,
     #     collate_fn=utils.collate_fn
     # )
-    # # 训练
+    # # 测试训练
     # images, targets = next(iter(data_loader))
     # images = list(image for image in images)
     # targets = [{k: v for k, v in t.items()} for t in targets]
     # output = model(images, targets)  # Returns losses and detections
     # print(output)
-    # # 推理
+    # # 测试推理
     # model.eval()
     # x = [torch.rand(3, 300, 400), torch.rand(3, 500, 400)]
     # predictions = model(x)  # Returns predictions

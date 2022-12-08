@@ -15,7 +15,7 @@ from model import NeuralNetwork
 DEFAULT_EPOCHS = 30
 DEFAULT_BATCH_SIZE = 32
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-DEFAULT_SAVE_PATH = 'weights/model.pth'
+DEFAULT_SAVE_PATH = 'data/model.pth'
 
 
 def get_dataloader(opt):

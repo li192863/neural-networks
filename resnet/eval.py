@@ -1,15 +1,17 @@
 import argparse
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import torchvision.transforms.functional as F
+from PIL import ImageDraw, ImageFont, Image
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
+from torchvision.utils import make_grid
 
 from model import NeuralNetwork
 
-DEFAULT_MODEL_PATH = 'weights/model.pth'
+DEFAULT_MODEL_PATH = 'data/model.pth'
 DEFAULT_BATCH_SIZE = 32
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -41,33 +43,44 @@ def get_test_data(opt):
     return x, y
 
 
-def show(images, labels):
+def show_classification_result(images, labels, image_size=None, text_color=None):
     """
     展示图片
     :param images: 图片 images
     :param labels: 标签 list
+    :param image_size: 图片大小
+    :param text_color: 文本颜色
     :return:
     """
-    # 预训练时标准化的均值和方差
-    mean = np.array([0.485, 0.456, 0.406])
-    std = np.array([0.229, 0.224, 0.225])
-    # 对输入tensor进行处理
-    images = [np.clip(np.transpose(image.cpu(), (1, 2, 0)), 0.0, 1.0) * std + mean for image in images]
-    labels = [str(label) for label in labels]
-    # 绘图
-    n = int(np.ceil(np.sqrt(len(images))))
-    fig, axes = plt.subplots(nrows=n, ncols=n, squeeze=False)
-    for i in range(n * n):
-        # 绘制子图
-        if i < len(images):
-            axes[i // n, i % n].imshow(images[i])
-            axes[i // n, i % n].set_title(labels[i])
-        # 去除边框
-        for item in ['left', 'right', 'bottom', 'top']:
-            axes[i // n, i % n].spines[item].set_visible(False)
-        axes[i // n, i % n].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[])
-    plt.savefig('result.png')
-    # plt.show()
+    # 预处理图片
+    mean = np.array([0.485, 0.456, 0.406]).reshape((3, 1, 1))  # 预训练时标准化的均值
+    std = np.array([0.229, 0.224, 0.225]).reshape((3, 1, 1))  # 预训练时标准化的方差
+    images = [np.clip(image.cpu() * std + mean, 0.0, 1.0) for image in images]  # 对输入tensor进行处理
+    labels = [str(label) for label in labels]  # 对输入tensor进行处理
+
+    # 绘制每张图
+    scale = 16  # 设置字体缩放大小
+    image_size = image_size or images[0].shape[1:]  # 获取图片大小
+    font = ImageFont.truetype(font='data/Microsoft YaHei.ttf', size=sum(image_size) // scale)  # 设置字体
+
+    num_images = len(images)
+    for i in range(num_images):
+        # 转换为PIL图像
+        image = F.to_pil_image(images[i])
+        image = image.resize(image_size)  # 放大以更清楚显示
+        # 绘制标题
+        draw = ImageDraw.Draw(image)
+        draw.text((0, 0), labels[i], font=font, fill=text_color)
+        # 转换为tensor
+        images[i] = F.pil_to_tensor(image)
+
+    # 生成网格图
+    nrow = 8
+    # nrow = int(np.ceil(np.sqrt(len(images))))
+    result = make_grid(images, nrow=nrow)
+    result = F.to_pil_image(result)
+    result.save('result.png')
+    result.show()
 
 
 def parse_opt():
@@ -103,7 +116,7 @@ def main(opt):
         labels = [f'{predict[i]}' if predict[i] == actual[i] else f'{predict[i]}({actual[i]})'
                   for i in range(len(predict))]
         print(f'Accuracy: {100 * np.sum(predict == actual) / len(predict)}%.')
-        show(x, labels)
+        show_classification_result(x, labels)
 
 
 if __name__ == '__main__':
