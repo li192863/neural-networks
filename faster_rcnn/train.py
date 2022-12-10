@@ -4,31 +4,16 @@ import time
 import torch
 
 import utils
-import transforms as T
 from dataset import FaceMaskDataset
-from engine import train_one_epoch, evaluate
 from model import get_model_object_detection
+from engine import train_one_epoch, evaluate
+from presets import DetectionPresetTrain, DetectionPresetEval
 
 DATASET_ROOT_PATH = '../../datasets/face-mask-detection'
-DEFAULT_EPOCHS = 30
+DEFAULT_EPOCHS = 2
 DEFAULT_BATCH_SIZE = 1
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_SAVE_PATH = 'data/model.pth'
-
-
-def get_transform(train):
-    """
-    获取数据变换器
-    :param train:
-    :return:
-    """
-    transforms = []
-    # 将图像转换为张量
-    transforms.append(T.ToTensor())
-    if train:
-        # 训练过程中，随机翻转训练图片以及其真实值
-        transforms.append(T.RandomHorizontalFlip(0.5))
-    return T.Compose(transforms)
 
 
 def get_dataloader(opt):
@@ -38,8 +23,8 @@ def get_dataloader(opt):
     :return:
     """
     # 使用数据集
-    train_data = FaceMaskDataset(DATASET_ROOT_PATH, get_transform(train=True))
-    test_data = FaceMaskDataset(DATASET_ROOT_PATH, get_transform(train=False))
+    train_data = FaceMaskDataset(DATASET_ROOT_PATH, DetectionPresetTrain(data_augmentation='hflip'))
+    test_data = FaceMaskDataset(DATASET_ROOT_PATH, DetectionPresetEval())
 
     # 划分数据集为训练集与测试集
     indices = torch.randperm(len(train_data)).tolist()

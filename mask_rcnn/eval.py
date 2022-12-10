@@ -11,12 +11,12 @@ from torchvision.utils import draw_segmentation_masks, make_grid
 
 import utils
 from dataset import PennFudanDataset
-from train import get_transform
+from presets import DetectionPresetEval
 from model import get_model_instance_segmentation
 
 DATASET_ROOT_PATH = '../../datasets/PennFudanPed/'
 DEFAULT_MODEL_PATH = 'data/model.pth'
-DEFAULT_BATCH_SIZE = 6
+DEFAULT_BATCH_SIZE = 4
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
@@ -25,7 +25,7 @@ def get_test_data(opt):
     获取测试数据
     :return:
     """
-    test_data = PennFudanDataset(DATASET_ROOT_PATH, get_transform(train=False))
+    test_data = PennFudanDataset(DATASET_ROOT_PATH, DetectionPresetEval())
     test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=opt.batch_size, shuffle=True,
                                                   num_workers=4, collate_fn=utils.collate_fn)
 
@@ -72,7 +72,7 @@ def show_segmentation_result(images, masks, labels, image_size=None, colors=None
     nrow = int(math.ceil(math.sqrt(len(images))))
     result = make_grid(images, nrow=nrow)
     result = F.to_pil_image(result)
-    result.save('result.png')
+    result.save('data/result.png')
     result.show()
 
 

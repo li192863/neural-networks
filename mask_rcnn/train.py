@@ -7,10 +7,11 @@ import utils
 import transforms as T
 from dataset import PennFudanDataset
 from engine import train_one_epoch, evaluate
-from mask_rcnn.model import get_model_instance_segmentation
+from model import get_model_instance_segmentation
+from presets import DetectionPresetTrain, DetectionPresetEval
 
 DATASET_ROOT_PATH = '../../datasets/PennFudanPed/'
-DEFAULT_EPOCHS = 30
+DEFAULT_EPOCHS = 2
 DEFAULT_BATCH_SIZE = 2
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_SAVE_PATH = 'data/model.pth'
@@ -38,8 +39,8 @@ def get_dataloader(opt):
     :return:
     """
     # 使用数据集
-    train_data = PennFudanDataset(DATASET_ROOT_PATH, get_transform(train=True))
-    test_data = PennFudanDataset(DATASET_ROOT_PATH, get_transform(train=False))
+    train_data = PennFudanDataset(DATASET_ROOT_PATH, DetectionPresetTrain(data_augmentation='hflip'))
+    test_data = PennFudanDataset(DATASET_ROOT_PATH, DetectionPresetEval())
 
     # 划分数据集为训练集与测试集
     indices = torch.randperm(len(train_data)).tolist()

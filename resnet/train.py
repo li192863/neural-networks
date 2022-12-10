@@ -6,13 +6,13 @@ import torch
 from torch import nn
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
-from torchvision import datasets, transforms
+from torchvision import datasets
 from torchvision.models import resnet18
 from tqdm import tqdm
 
-from model import NeuralNetwork
+from presets import ClassificationPresetTrain, ClassificationPresetEval
 
-DEFAULT_EPOCHS = 30
+DEFAULT_EPOCHS = 2
 DEFAULT_BATCH_SIZE = 32
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_SAVE_PATH = 'data/model.pth'
@@ -24,24 +24,10 @@ def get_dataloader(opt):
     :param opt:
     :return:
     """
-    data_transform = {
-        'train': transforms.Compose([
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-        'val': transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-    }
     training_data = datasets.ImageFolder(root=os.path.join('../../datasets/hymenoptera_data', 'train'),
-                                         transform=data_transform['train'])
+                                         transform=ClassificationPresetTrain(crop_size=224))
     test_data = datasets.ImageFolder(root=os.path.join('../../datasets/hymenoptera_data', 'val'),
-                                     transform=data_transform['val'])
+                                     transform=ClassificationPresetEval(crop_size=224))
     train_dataloader = DataLoader(training_data, shuffle=True, batch_size=opt.batch_size, num_workers=4)
     test_dataloader = DataLoader(test_data, shuffle=True, batch_size=opt.batch_size, num_workers=4)
     return train_dataloader, test_dataloader

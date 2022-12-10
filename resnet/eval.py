@@ -11,6 +11,7 @@ from torchvision import datasets, transforms
 from torchvision.utils import make_grid
 
 from model import NeuralNetwork
+from presets import ClassificationPresetEval
 
 DEFAULT_MODEL_PATH = 'data/model.pth'
 DEFAULT_BATCH_SIZE = 32
@@ -36,7 +37,7 @@ def get_test_data(opt):
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     }
-    test_data = datasets.ImageFolder(root=os.path.join('../../datasets/hymenoptera_data', 'val'), transform=data_transform['val'])
+    test_data = datasets.ImageFolder(root=os.path.join('../../datasets/hymenoptera_data', 'val'), transform=ClassificationPresetEval(crop_size=224))
     test_dataloader = DataLoader(test_data, shuffle=True, batch_size=opt.batch_size, num_workers=4)
 
     x, y = next(iter(test_dataloader))
@@ -80,7 +81,7 @@ def show_classification_result(images, labels, image_size=None, text_color=None)
     # nrow = int(math.ceil(math.sqrt(len(images))))
     result = make_grid(images, nrow=nrow)
     result = F.to_pil_image(result)
-    result.save('result.png')
+    result.save('data/result.png')
     result.show()
 
 

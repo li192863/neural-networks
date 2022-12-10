@@ -7,14 +7,14 @@ import torchvision.transforms.functional as F
 from PIL import Image
 from torchvision.utils import draw_bounding_boxes, make_grid
 
-import utils
+import utils as utils
 from dataset import FaceMaskDataset
-from train import get_transform
 from model import get_model_object_detection
+from presets import DetectionPresetEval
 
 DATASET_ROOT_PATH = '../../datasets/face-mask-detection'
 DEFAULT_MODEL_PATH = 'data/model.pth'
-DEFAULT_BATCH_SIZE = 6
+DEFAULT_BATCH_SIZE = 4
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
@@ -23,7 +23,7 @@ def get_test_data(opt):
     获取测试数据
     :return:
     """
-    test_data = FaceMaskDataset(DATASET_ROOT_PATH, get_transform(train=False))
+    test_data = FaceMaskDataset(DATASET_ROOT_PATH, DetectionPresetEval())
     test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=opt.batch_size, shuffle=True,
                                                   num_workers=4, collate_fn=utils.collate_fn)
 
@@ -64,7 +64,7 @@ def show_detection_result(images, boxes, labels, image_size=None, colors=None):
     nrow = int(math.ceil(math.sqrt(len(images))))
     result = make_grid(images, nrow=nrow)
     result = F.to_pil_image(result)
-    result.save('result.png')
+    result.save('data/result.png')
     result.show()
 
 

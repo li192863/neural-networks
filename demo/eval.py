@@ -39,8 +39,6 @@ def show_classification_result(images, labels, image_size=None, text_color=None)
     :return:
     """
     # 预处理图片
-    # mean = np.array([0.485, 0.456, 0.406]).reshape((3, 1, 1))  # 预训练时标准化的均值
-    # std = np.array([0.229, 0.224, 0.225]).reshape((3, 1, 1))  # 预训练时标准化的方差
     images = [np.clip(image.cpu(), 0.0, 1.0) for image in images]  # 对输入tensor进行处理
     labels = [str(label) for label in labels]  # 对输入tensor进行处理
 
@@ -65,7 +63,7 @@ def show_classification_result(images, labels, image_size=None, text_color=None)
     # nrow = int(math.ceil(math.sqrt(len(images))))
     result = make_grid(images, nrow=nrow)
     result = F.to_pil_image(result)
-    result.save('result.png')
+    result.save('data/result.png')
     result.show()
 
 
