@@ -23,20 +23,6 @@ def get_test_data(opt):
     获取测试数据
     :return:
     """
-    data_transform = {
-        'train': transforms.Compose([
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-        'val': transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-    }
     test_data = datasets.ImageFolder(root=os.path.join('../../datasets/hymenoptera_data', 'val'), transform=ClassificationPresetEval(crop_size=224))
     test_dataloader = DataLoader(test_data, shuffle=True, batch_size=opt.batch_size, num_workers=4)
 
@@ -57,7 +43,7 @@ def show_classification_result(images, labels, image_size=None, text_color=None)
     # 预处理图片
     mean = np.array([0.485, 0.456, 0.406]).reshape((3, 1, 1))  # 预训练时标准化的均值
     std = np.array([0.229, 0.224, 0.225]).reshape((3, 1, 1))  # 预训练时标准化的方差
-    images = [np.clip(image.cpu() * std + mean, 0.0, 1.0) for image in images]  # 对输入tensor进行处理
+    images = [torch.clip(image.cpu() * std + mean, 0.0, 1.0) for image in images]  # 对输入tensor进行处理
     labels = [str(label) for label in labels]  # 对输入tensor进行处理
 
     # 绘制每张图
