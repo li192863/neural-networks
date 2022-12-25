@@ -39,7 +39,7 @@ def show_classification_result(images, labels, image_size=None, text_color=None)
     :return:
     """
     # 预处理图片
-    images = [np.clip(image.cpu(), 0.0, 1.0) for image in images]  # 对输入tensor进行处理
+    images = [torch.clip(image.cpu(), 0.0, 1.0) for image in images]  # 对输入tensor进行处理
     labels = [str(label) for label in labels]  # 对输入tensor进行处理
 
     # 绘制每张图
