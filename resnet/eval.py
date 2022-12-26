@@ -1,8 +1,8 @@
 import argparse
 import math
 import os
+from functools import reduce
 
-import numpy as np
 import torch
 import torchvision.transforms.functional as F
 from PIL import ImageDraw, ImageFont, Image
@@ -23,7 +23,8 @@ def get_test_data(opt):
     获取测试数据
     :return:
     """
-    test_data = datasets.ImageFolder(root=os.path.join('../../datasets/hymenoptera_data', 'val'), transform=ClassificationPresetEval(crop_size=224))
+    test_data = datasets.ImageFolder(root=os.path.join('../../datasets/hymenoptera_data', 'val'),
+                                     transform=ClassificationPresetEval(crop_size=224))
     test_dataloader = DataLoader(test_data, shuffle=True, batch_size=opt.batch_size, num_workers=4)
 
     x, y = next(iter(test_dataloader))
@@ -41,8 +42,8 @@ def show_classification_result(images, labels, image_size=None, text_color=None)
     :return:
     """
     # 预处理图片
-    mean = np.array([0.485, 0.456, 0.406]).reshape((3, 1, 1))  # 预训练时标准化的均值
-    std = np.array([0.229, 0.224, 0.225]).reshape((3, 1, 1))  # 预训练时标准化的方差
+    mean = torch.tensor([0.485, 0.456, 0.406]).reshape((3, 1, 1))  # 预训练时标准化的均值
+    std = torch.tensor([0.229, 0.224, 0.225]).reshape((3, 1, 1))  # 预训练时标准化的方差
     images = [torch.clip(image.cpu() * std + mean, 0.0, 1.0) for image in images]  # 对输入tensor进行处理
     labels = [str(label) for label in labels]  # 对输入tensor进行处理
 
@@ -98,12 +99,13 @@ def main(opt):
     model.eval()  # Sets the module in training mode.
     with torch.no_grad():  # Disabling gradient calculation
         pred = model(x)
-        predict = np.array([classes[i] for i in pred.argmax(dim=1)])  # 预测值
-        actual = np.array([classes[i] for i in y])  # 真实值
+        predict = [classes[i] for i in pred.argmax(dim=1)]  # 预测值
+        actual = [classes[i] for i in y]  # 真实值
 
         labels = [f'{predict[i]}' if predict[i] == actual[i] else f'{predict[i]}({actual[i]})'
                   for i in range(len(predict))]
-        print(f'Accuracy: {100 * np.sum(predict == actual) / len(predict)}%.')
+        print(
+            f'Accuracy: {100 * reduce(lambda a, b: a + b, map(lambda x: 1 if x[0] == x[1] else 0, zip(predict, actual))) / len(predict)}%.')
         show_classification_result(x, labels)
 
 

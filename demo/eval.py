@@ -1,7 +1,7 @@
 import argparse
 import math
+from functools import reduce
 
-import numpy as np
 import torch
 import torchvision.transforms.functional as F
 from PIL import ImageFont, ImageDraw, Image
@@ -21,7 +21,8 @@ def get_test_data(opt):
     获取测试数据
     :return:
     """
-    test_data = datasets.FashionMNIST(root='../../datasets/', train=False, download=True, transform=transforms.ToTensor())
+    test_data = datasets.FashionMNIST(root='../../datasets/', train=False, download=True,
+                                      transform=transforms.ToTensor())
     test_dataloader = DataLoader(test_data, shuffle=True, batch_size=opt.batch_size, num_workers=4)
 
     x, y = next(iter(test_dataloader))
@@ -95,12 +96,13 @@ def main(opt):
     model.eval()  # Sets the module in training mode.
     with torch.no_grad():  # Disabling gradient calculation
         pred = model(x)
-        predict = np.array([classes[i] for i in pred.argmax(dim=1)])  # 预测值
-        actual = np.array([classes[i] for i in y])  # 真实值
+        predict = [classes[i] for i in pred.argmax(dim=1)]  # 预测值
+        actual = [classes[i] for i in y]  # 真实值
 
         labels = [f'{predict[i]}' if predict[i] == actual[i] else f'{predict[i]}({actual[i]})'
                   for i in range(len(predict))]
-        print(f'Accuracy: {100 * np.sum(predict == actual) / len(predict)}%.')
+        print(
+            f'Accuracy: {100 * reduce(lambda a, b: a + b, map(lambda x: 1 if x[0] == x[1] else 0, zip(predict, actual))) / len(predict)}%.')
         show_classification_result(x, labels, image_size=(256, 256), text_color='#ffffff')
 
 
