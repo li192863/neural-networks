@@ -9,10 +9,14 @@ from tqdm import tqdm
 
 from model import NeuralNetwork
 
-DEFAULT_EPOCHS = 2
+DATASET_ROOT_PATH = '../../datasets/'
+DEFAULT_EPOCHS = 30
 DEFAULT_BATCH_SIZE = 32
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_SAVE_PATH = 'data/model.pth'
+DEFAULT_WORKERS = 16
+classes = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 'Sandal', 'Shirt', 'Sneaker', 'Bag',
+               'Ankle boot']
 
 
 def get_dataloader(opt):
@@ -21,12 +25,12 @@ def get_dataloader(opt):
     :param opt:
     :return:
     """
-    training_data = datasets.FashionMNIST(root='../../datasets/', train=True, download=True,
+    training_data = datasets.FashionMNIST(root=DATASET_ROOT_PATH, train=True, download=True,
                                           transform=transforms.ToTensor())
-    test_data = datasets.FashionMNIST(root='../../datasets/', train=False, download=True,
+    test_data = datasets.FashionMNIST(root=DATASET_ROOT_PATH, train=False, download=True,
                                       transform=transforms.ToTensor())
-    train_dataloader = DataLoader(training_data, shuffle=True, batch_size=opt.batch_size, num_workers=4)
-    test_dataloader = DataLoader(test_data, shuffle=True, batch_size=opt.batch_size, num_workers=4)
+    train_dataloader = DataLoader(training_data, shuffle=True, batch_size=opt.batch_size, num_workers=opt.workers)
+    test_dataloader = DataLoader(test_data, shuffle=True, batch_size=opt.batch_size, num_workers=opt.workers)
     return train_dataloader, test_dataloader
 
 
@@ -115,6 +119,7 @@ def parse_opt():
     parser.add_argument('--batch-size', type=int, default=DEFAULT_BATCH_SIZE, help='batch size')
     parser.add_argument('--device', default=DEFAULT_DEVICE, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--save-path', default=DEFAULT_SAVE_PATH, help='model save path')
+    parser.add_argument('--workers', default=DEFAULT_WORKERS, help='max dataloader workers')
     return parser.parse_args()
 
 
@@ -131,8 +136,6 @@ def main(opt):
     # 数据
     train_dataloader, test_dataloader = get_dataloader(opt)
     # 模型
-    classes = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 'Sandal', 'Shirt', 'Sneaker', 'Bag',
-               'Ankle boot']
     num_classes = len(classes)
     model = NeuralNetwork(num_classes).to(opt.device)
     # 参数
