@@ -9,6 +9,7 @@ class MotorcycleNightRideDataset(torch.utils.data.Dataset):
     def __init__(self, root, transforms=None):
         self.root = root
         self.transforms = transforms
+        self.classes = ['Undrivable', 'Road', 'Lanemark', 'My bike', 'Rider', 'Movable']
         # 加载所有图片文件，并对文件进行排序
         self.files = list(sorted(os.listdir(os.path.join(root, 'images'))))
         self.imgs = [self.files[i] for i in range(len(self.files)) if i % 3 == 0]
@@ -19,7 +20,7 @@ class MotorcycleNightRideDataset(torch.utils.data.Dataset):
         img_path = os.path.join(self.root, 'images', self.imgs[idx])
         mask_path = os.path.join(self.root, 'images', self.masks[idx])
         img = Image.open(img_path).convert('RGB')
-        mask = Image.open(mask_path).convert('P')
+        mask = Image.open(mask_path).convert('P', colors=len(self.classes))
 
         if self.transforms is not None:
             img, mask = self.transforms(img, mask)
