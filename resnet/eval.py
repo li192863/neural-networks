@@ -13,9 +13,12 @@ from torchvision.utils import make_grid
 from model import NeuralNetwork
 from presets import ClassificationPresetEval
 
+DATASET_ROOT_PATH = '../../datasets/hymenoptera_data'
 DEFAULT_MODEL_PATH = 'data/model.pth'
 DEFAULT_BATCH_SIZE = 32
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+DEFAULT_WORKERS = 16
+classes = ['ants', 'bees']
 
 
 def get_test_data(opt):
@@ -23,9 +26,9 @@ def get_test_data(opt):
     获取测试数据
     :return:
     """
-    test_data = datasets.ImageFolder(root=os.path.join('../../datasets/hymenoptera_data', 'val'),
+    test_data = datasets.ImageFolder(root=os.path.join(DATASET_ROOT_PATH, 'val'),
                                      transform=ClassificationPresetEval(crop_size=224))
-    test_dataloader = DataLoader(test_data, shuffle=True, batch_size=opt.batch_size, num_workers=4)
+    test_dataloader = DataLoader(test_data, shuffle=True, batch_size=opt.batch_size, num_workers=opt.workers)
 
     x, y = next(iter(test_dataloader))
     x, y = x.to(opt.device), y.to(opt.device)
@@ -81,6 +84,7 @@ def parse_opt():
     parser.add_argument('--model-path', default=DEFAULT_MODEL_PATH, help='model data path')
     parser.add_argument('--batch-size', type=int, default=DEFAULT_BATCH_SIZE, help='batch size')
     parser.add_argument('--device', default=DEFAULT_DEVICE, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--workers', default=DEFAULT_WORKERS, help='max dataloader workers')
     return parser.parse_args()
 
 
@@ -90,7 +94,6 @@ def main(opt):
     # 数据
     x, y = get_test_data(opt)
     # 模型
-    classes = ['ants', 'bees']
     num_classes = len(classes)
     model = NeuralNetwork(num_classes).to(opt.device)
     # 参数
