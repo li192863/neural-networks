@@ -3,21 +3,19 @@ import colorsys
 import math
 from functools import reduce
 
-import numpy as np
 import torch
-import torchvision
 import torchvision.transforms.functional as F
 from PIL import ImageFont, ImageDraw, Image
 from torch.utils.data import DataLoader
-from torchvision.datasets import VOCSegmentation
 from torchvision.ops import masks_to_boxes
 from torchvision.utils import draw_segmentation_masks, make_grid
 
 import utils
+from deeplabv3.dataset import MotorcycleNightRideDataset
 from deeplabv3.model import get_model_sematic_segmentation
 from deeplabv3.presets import SegmentationPresetEval
 
-DATASET_ROOT_PATH = '../../datasets'
+DATASET_ROOT_PATH = '../../datasets/Motorcycle Night Ride'
 DEFAULT_MODEL_PATH = 'data/model.pth'
 DEFAULT_BATCH_SIZE = 6
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -28,8 +26,7 @@ def get_test_data(opt):
     获取测试数据
     :return:
     """
-    test_data = VOCSegmentation(DATASET_ROOT_PATH, '2012', 'val', download=False,
-                                transforms=SegmentationPresetEval(base_size=520))
+    test_data = MotorcycleNightRideDataset(DATASET_ROOT_PATH, transforms=SegmentationPresetEval(base_size=520))
     test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=opt.batch_size, shuffle=True,
                                                   num_workers=4, collate_fn=utils.collate_fn)
 
@@ -143,14 +140,12 @@ def main(opt):
     # 数据
     x, y = get_test_data(opt)
     # 模型
-    classes = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',
-               'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike',
-               'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
+    classes = ['Undrivable', 'Road', 'Lanemark', 'My bike', 'Rider', 'Movable']
     num_classes = len(classes)
-    model = torchvision.models.segmentation.deeplabv3_resnet50(weights='DEFAULT').to(opt.device)
+    model = get_model_sematic_segmentation(num_classes).to(opt.device)
     # model = get_model_sematic_segmentation(num_classes).to(opt.device)
     # 参数
-    # model.load_state_dict(torch.load(opt.model_path))
+    model.load_state_dict(torch.load(opt.model_path))
     # 评估
     model.eval()  # Sets the module in training mode.
     with torch.no_grad():  # Disabling gradient calculation
@@ -159,16 +154,17 @@ def main(opt):
         # 处理结果数据
         normalized_masks = pred['out'].softmax(dim=1).to('cpu')
         num_pics, num_classes, _, _ = normalized_masks.shape
-        # class_to_idx = {cls: idx for idx, cls in enumerate(classes)}  # 类别至序号的映射
         masks = (normalized_masks.argmax(1) == torch.arange(normalized_masks.shape[1])[:, None, None, None]).swapaxes(0, 1)  # 生成bool值
-        masks = masks[:, 1:, :, :]  # 去除背景
-        labels = classes[1:]  # 去除背景
+        labels = classes  # 不去除背景
+        # masks = masks[:, 1:, :, :]  # 去除背景
+        # labels = classes[1:]  # 去除背景
 
         # 标签数字转化为标签名称
         hsv_tuples = [(x / num_classes, 1., 1.) for x in range(num_classes)]  # 色调 饱和度1 亮度1
         color = list(map(lambda x: colorsys.hsv_to_rgb(*x), hsv_tuples))
         color = list(map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)), color))
-        colors = color[1:]  # 去除背景
+        colors = color  # 不去除背景
+        # colors = color[1:]  # 去除背景
         show_segmentation_result(x, masks, labels, image_size=[640, 640], colors=colors)
 
 

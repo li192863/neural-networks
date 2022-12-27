@@ -10,7 +10,7 @@ from presets import SegmentationPresetTrain, SegmentationPresetEval
 from model import get_model_sematic_segmentation
 
 DATASET_ROOT_PATH = '../../datasets/Motorcycle Night Ride'
-DEFAULT_EPOCHS = 2
+DEFAULT_EPOCHS = 30
 DEFAULT_BATCH_SIZE = 4
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_SAVE_PATH = 'data/model.pth'
