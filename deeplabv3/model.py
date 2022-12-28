@@ -6,7 +6,7 @@ from torchvision.models.segmentation.fcn import FCNHead
 
 def get_model_sematic_segmentation(num_classes):
     # 加载在COCO上预训练的实例分割模型mask-rcnn
-    model = torchvision.models.segmentation.deeplabv3_resnet50(weights='DEFAULT', weights_backbone='DEFAULT')
+    model = torchvision.models.segmentation.deeplabv3_resnet50(weights='DEFAULT', aux_loss=True, weights_backbone='DEFAULT')
 
     # 获取分类器的输入种类数
     in_channels = model.classifier[0].convs[0][0].in_channels

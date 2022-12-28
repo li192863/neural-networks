@@ -19,6 +19,8 @@ DATASET_ROOT_PATH = '../../datasets/Motorcycle Night Ride'
 DEFAULT_MODEL_PATH = 'data/model.pth'
 DEFAULT_BATCH_SIZE = 6
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+DEFAULT_WORKERS = 16
+classes = ['Undrivable', 'Road', 'Lanemark', 'My bike', 'Rider', 'Movable']
 
 
 def get_test_data(opt):
@@ -28,16 +30,16 @@ def get_test_data(opt):
     """
     test_data = MotorcycleNightRideDataset(DATASET_ROOT_PATH, transforms=SegmentationPresetEval(base_size=520))
     test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=opt.batch_size, shuffle=True,
-                                                  num_workers=4, collate_fn=utils.collate_fn)
+                                                  num_workers=opt.workers, collate_fn=utils.collate_fn)
 
     x, y = next(iter(test_dataloader))
     x, y = x.to(opt.device), y.to(opt.device)
     return x, y
 
 
-def show_segmentation_result(images, masks, labels, image_size=None, colors=None):
+def show_sematic_segmentation_result(images, masks, labels, image_size=None, colors=None):
     """
-    展示目标检测结果
+    展示语义分割结果
     :param images:
     :param boxes:
     :param labels:
@@ -87,7 +89,7 @@ def show_segmentation_result(images, masks, labels, image_size=None, colors=None
 
 def remove_edge(image):
     """
-    去除图片外围多余黑边
+    去除图片右边以及下边外围多余黑边
     :param image:
     :return:
     """
@@ -131,6 +133,7 @@ def parse_opt():
     parser.add_argument('--model-path', default=DEFAULT_MODEL_PATH, help='model weights path')
     parser.add_argument('--batch-size', type=int, default=DEFAULT_BATCH_SIZE, help='batch size')
     parser.add_argument('--device', default=DEFAULT_DEVICE, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--workers', default=DEFAULT_WORKERS, help='max dataloader workers')
     return parser.parse_args()
 
 
@@ -140,10 +143,8 @@ def main(opt):
     # 数据
     x, y = get_test_data(opt)
     # 模型
-    classes = ['Undrivable', 'Road', 'Lanemark', 'My bike', 'Rider', 'Movable']
     num_classes = len(classes)
     model = get_model_sematic_segmentation(num_classes).to(opt.device)
-    # model = get_model_sematic_segmentation(num_classes).to(opt.device)
     # 参数
     model.load_state_dict(torch.load(opt.model_path))
     # 评估
@@ -165,7 +166,7 @@ def main(opt):
         color = list(map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)), color))
         colors = color  # 不去除背景
         # colors = color[1:]  # 去除背景
-        show_segmentation_result(x, masks, labels, image_size=[640, 640], colors=colors)
+        show_sematic_segmentation_result(x, masks, labels, image_size=[640, 640], colors=colors)
 
 
 if __name__ == '__main__':

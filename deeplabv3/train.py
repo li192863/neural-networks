@@ -10,10 +10,12 @@ from presets import SegmentationPresetTrain, SegmentationPresetEval
 from model import get_model_sematic_segmentation
 
 DATASET_ROOT_PATH = '../../datasets/Motorcycle Night Ride'
-DEFAULT_EPOCHS = 30
+DEFAULT_EPOCHS = 50
 DEFAULT_BATCH_SIZE = 4
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_SAVE_PATH = 'data/model.pth'
+DEFAULT_WORKERS = 16
+classes = ['Undrivable', 'Road', 'Lanemark', 'My bike', 'Rider', 'Movable']
 
 
 def get_dataloader(opt):
@@ -23,7 +25,8 @@ def get_dataloader(opt):
     :return:
     """
     # 使用数据集
-    train_data = MotorcycleNightRideDataset(DATASET_ROOT_PATH, transforms=SegmentationPresetTrain(base_size=520, crop_size=480))
+    train_data = MotorcycleNightRideDataset(DATASET_ROOT_PATH,
+                                            transforms=SegmentationPresetTrain(base_size=520, crop_size=480))
     test_data = MotorcycleNightRideDataset(DATASET_ROOT_PATH, transforms=SegmentationPresetEval(base_size=520))
 
     # 划分数据集为训练集与测试集
@@ -32,11 +35,11 @@ def get_dataloader(opt):
     test_data = torch.utils.data.Subset(test_data, indices[-50:])
 
     # 定义数据加载器
-    train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=opt.batch_size, shuffle=True, num_workers=4,
-                                                   collate_fn=utils.collate_fn)
+    train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=opt.batch_size, shuffle=True,
+                                                   num_workers=opt.workers, collate_fn=utils.collate_fn)
 
     test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=opt.batch_size, shuffle=False,
-                                                  num_workers=4, collate_fn=utils.collate_fn)
+                                                  num_workers=opt.workers, collate_fn=utils.collate_fn)
     return train_dataloader, test_dataloader
 
 
@@ -72,6 +75,7 @@ def parse_opt():
     parser.add_argument('--batch-size', type=int, default=DEFAULT_BATCH_SIZE, help='batch size')
     parser.add_argument('--device', default=DEFAULT_DEVICE, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--save-path', default=DEFAULT_SAVE_PATH, help='model save path')
+    parser.add_argument('--workers', default=DEFAULT_WORKERS, help='max dataloader workers')
     return parser.parse_args()
 
 
@@ -88,14 +92,13 @@ def main(opt):
     # 数据
     train_dataloader, test_dataloader = get_dataloader(opt)
     # 模型
-    classes = ['Undrivable', 'Road', 'Lanemark', 'My bike', 'Rider', 'Movable']
     num_classes = len(classes)
     model = get_model_sematic_segmentation(num_classes).to(opt.device)
     # 参数
     params = [
         {'params': [p for p in model.backbone.parameters() if p.requires_grad]},
         {'params': [p for p in model.classifier.parameters() if p.requires_grad]},
-        # {'params': [p for p in model.aux_classifier.parameters() if p.requires_grad], 'lr': 0.1},
+        {'params': [p for p in model.aux_classifier.parameters() if p.requires_grad], 'lr': 0.1},
     ]
     optimizer = torch.optim.SGD(params, lr=0.01, momentum=0.9, weight_decay=1e-4)  # 优化器
     lr_scheduler = torch.optim.lr_scheduler.PolynomialLR(optimizer, total_iters=len(train_dataloader) * opt.epochs,
