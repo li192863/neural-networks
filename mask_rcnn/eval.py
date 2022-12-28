@@ -39,7 +39,7 @@ def get_test_data(opt):
 
 def show_instance_segmentation_result(images, masks, labels, image_size=None, colors=None):
     """
-    展示目标检测结果
+    展示实例分割结果
     :param images:
     :param boxes:
     :param labels:
