@@ -5,7 +5,7 @@ from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 
 def get_model_instance_segmentation(num_classes):
     # 加载在COCO上预训练的实例分割模型mask-rcnn
-    model = torchvision.models.detection.maskrcnn_resnet50_fpn(weights='DEFAULT')
+    model = torchvision.models.detection.maskrcnn_resnet50_fpn(weights='DEFAULT', weights_backbone='DEFAULT')
 
     # 获取分类器的输入种类数
     in_features = model.roi_heads.box_predictor.cls_score.in_features

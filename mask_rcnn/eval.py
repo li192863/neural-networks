@@ -16,8 +16,10 @@ from model import get_model_instance_segmentation
 
 DATASET_ROOT_PATH = '../../datasets/PennFudanPed/'
 DEFAULT_MODEL_PATH = 'data/model.pth'
-DEFAULT_BATCH_SIZE = 4
+DEFAULT_BATCH_SIZE = 6
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+DEFAULT_WORKERS = 16
+classes = ['background', 'person']
 
 
 def get_test_data(opt):
@@ -27,7 +29,7 @@ def get_test_data(opt):
     """
     test_data = PennFudanDataset(DATASET_ROOT_PATH, DetectionPresetEval())
     test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=opt.batch_size, shuffle=True,
-                                                  num_workers=4, collate_fn=utils.collate_fn)
+                                                  num_workers=opt.workers, collate_fn=utils.collate_fn)
 
     x, y = next(iter(test_dataloader))
     x = list(image.to(opt.device) for image in x)
@@ -35,7 +37,7 @@ def get_test_data(opt):
     return x, y
 
 
-def show_segmentation_result(images, masks, labels, image_size=None, colors=None):
+def show_instance_segmentation_result(images, masks, labels, image_size=None, colors=None):
     """
     展示目标检测结果
     :param images:
@@ -106,6 +108,7 @@ def parse_opt():
     parser.add_argument('--model-path', default=DEFAULT_MODEL_PATH, help='model weights path')
     parser.add_argument('--batch-size', type=int, default=DEFAULT_BATCH_SIZE, help='batch size')
     parser.add_argument('--device', default=DEFAULT_DEVICE, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--workers', default=DEFAULT_WORKERS, help='max dataloader workers')
     return parser.parse_args()
 
 
@@ -115,7 +118,6 @@ def main(opt):
     # 数据
     x, y = get_test_data(opt)
     # 模型
-    classes = ['background', 'person']
     num_classes = len(classes)
     model = get_model_instance_segmentation(num_classes).to(opt.device)
     # 参数
@@ -134,14 +136,18 @@ def main(opt):
         labels = [out['labels'][mask] for out, mask in zip(pred, mask)]  # 获取标签
 
         # 标签数字转化为标签名称
-        hsv_tuples = [(x / num_classes, 1., 1.) for x in range(num_classes)]  # 色调 饱和度1 亮度1
+        num_instances = sum(map(len, labels))  # 不同的实例不同的颜色
+        hsv_tuples = [(x / num_instances, 1., 1.) for x in range(num_instances)]  # 色调 饱和度1 亮度1    不同的实例不同的颜色1
+        # hsv_tuples = [(x / num_classes, 1., 1.) for x in range(num_classes)]  # 色调 饱和度1 亮度1    不同的类别不同的颜色
         color = list(map(lambda x: colorsys.hsv_to_rgb(*x), hsv_tuples))
         color = list(map(lambda x: (int(x[0] * 255), int(x[1] * 255), int(x[2] * 255)), color))
         colors = []
         for i, label in enumerate(labels):
             labels[i] = [classes[i] for i in label]
-            colors.append([color[i] for i in label])
-        show_segmentation_result(x, masks, labels, image_size=[640, 640], colors=colors)
+            i1, i2 = sum(map(len, labels[0: i])), sum(map(len, labels[0: i])) + len(labels[i])  # 选取的颜色
+            colors.append(color[i1: i2])  # 不同的实例不同的颜色
+            # colors.append([color[i] for i in label])  # 不同的类别不同的颜色
+        show_instance_segmentation_result(x, masks, labels, image_size=[640, 640], colors=colors)
         print(labels)
         print(scores)
 
