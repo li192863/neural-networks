@@ -10,10 +10,12 @@ from engine import train_one_epoch, evaluate
 from presets import DetectionPresetTrain, DetectionPresetEval
 
 DATASET_ROOT_PATH = '../../datasets/face-mask-detection'
-DEFAULT_EPOCHS = 2
+DEFAULT_EPOCHS = 30
 DEFAULT_BATCH_SIZE = 1
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_SAVE_PATH = 'data/model.pth'
+DEFAULT_WORKERS = 16
+classes = ['background', 'with_mask', 'without_mask', 'mask_weared_incorrect']
 
 
 def get_dataloader(opt):
@@ -32,11 +34,11 @@ def get_dataloader(opt):
     test_data = torch.utils.data.Subset(test_data, indices[-50:])
 
     # 定义数据加载器
-    train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=opt.batch_size, shuffle=True, num_workers=4,
+    train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=opt.batch_size, shuffle=True, num_workers=opt.workers,
                                                    collate_fn=utils.collate_fn)
 
     test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=opt.batch_size, shuffle=False,
-                                                  num_workers=4, collate_fn=utils.collate_fn)
+                                                  num_workers=opt.workers, collate_fn=utils.collate_fn)
     return train_dataloader, test_dataloader
 
 
@@ -72,6 +74,7 @@ def parse_opt():
     parser.add_argument('--batch-size', type=int, default=DEFAULT_BATCH_SIZE, help='batch size')
     parser.add_argument('--device', default=DEFAULT_DEVICE, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--save-path', default=DEFAULT_SAVE_PATH, help='model save path')
+    parser.add_argument('--workers', default=DEFAULT_WORKERS, help='max dataloader workers')
     return parser.parse_args()
 
 
@@ -88,7 +91,6 @@ def main(opt):
     # 数据
     train_dataloader, test_dataloader = get_dataloader(opt)
     # 模型
-    classes = ['background', 'with_mask', 'without_mask', 'mask_weared_incorrect']
     num_classes = len(classes)
     model = get_model_object_detection(num_classes).to(opt.device)
     # 参数

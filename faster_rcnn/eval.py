@@ -14,8 +14,10 @@ from presets import DetectionPresetEval
 
 DATASET_ROOT_PATH = '../../datasets/face-mask-detection'
 DEFAULT_MODEL_PATH = 'data/model.pth'
-DEFAULT_BATCH_SIZE = 4
+DEFAULT_BATCH_SIZE = 6
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+DEFAULT_WORKERS = 16
+classes = ['background', 'with_mask', 'without_mask', 'mask_weared_incorrect']
 
 
 def get_test_data(opt):
@@ -25,7 +27,7 @@ def get_test_data(opt):
     """
     test_data = FaceMaskDataset(DATASET_ROOT_PATH, DetectionPresetEval())
     test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=opt.batch_size, shuffle=True,
-                                                  num_workers=4, collate_fn=utils.collate_fn)
+                                                  num_workers=opt.workers, collate_fn=utils.collate_fn)
 
     x, y = next(iter(test_dataloader))
     x = list(image.to(opt.device) for image in x)
@@ -98,6 +100,7 @@ def parse_opt():
     parser.add_argument('--model-path', default=DEFAULT_MODEL_PATH, help='model weights path')
     parser.add_argument('--batch-size', type=int, default=DEFAULT_BATCH_SIZE, help='batch size')
     parser.add_argument('--device', default=DEFAULT_DEVICE, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--workers', default=DEFAULT_WORKERS, help='max dataloader workers')
     return parser.parse_args()
 
 
@@ -107,7 +110,6 @@ def main(opt):
     # 数据
     x, y = get_test_data(opt)
     # 模型
-    classes = ['background', 'with_mask', 'without_mask', 'mask_weared_incorrect']
     num_classes = len(classes)
     model = get_model_object_detection(num_classes).to(opt.device)
     # 参数
