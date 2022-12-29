@@ -11,16 +11,17 @@ from torchvision.ops import masks_to_boxes
 from torchvision.utils import draw_segmentation_masks, make_grid
 
 import utils
-from deeplabv3.dataset import MotorcycleNightRideDataset
+from deeplabv3.dataset import FootballPlayerSegmentationDataset
 from deeplabv3.model import get_model_sematic_segmentation
 from deeplabv3.presets import SegmentationPresetEval
 
-DATASET_ROOT_PATH = '../../datasets/Motorcycle Night Ride'
+DATASET_ROOT_PATH = '../../datasets/Football Player Segmentation'
 DEFAULT_MODEL_PATH = 'data/model.pth'
 DEFAULT_BATCH_SIZE = 6
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_WORKERS = 16
-classes = ['Undrivable', 'Road', 'Lanemark', 'My bike', 'Rider', 'Movable']
+classes = ['Goal Bar', 'Referee', 'Advertisement', 'Ground', 'Ball', 'Coaches & Officials', 'Audience',
+                        'Goalkeeper A', 'Goalkeeper B', 'Team A', 'Team B']
 
 
 def get_test_data(opt):
@@ -28,7 +29,7 @@ def get_test_data(opt):
     获取测试数据
     :return:
     """
-    test_data = MotorcycleNightRideDataset(DATASET_ROOT_PATH, transforms=SegmentationPresetEval(base_size=520))
+    test_data = FootballPlayerSegmentationDataset(DATASET_ROOT_PATH, transforms=SegmentationPresetEval(base_size=520))
     test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=opt.batch_size, shuffle=True,
                                                   num_workers=opt.workers, collate_fn=utils.collate_fn)
 

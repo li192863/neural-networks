@@ -5,11 +5,13 @@ import torch
 from PIL import Image
 
 
-class MotorcycleNightRideDataset(torch.utils.data.Dataset):
+class FootballPlayerSegmentationDataset(torch.utils.data.Dataset):
     def __init__(self, root, transforms=None):
         self.root = root
         self.transforms = transforms
-        self.classes = ['Undrivable', 'Road', 'Lanemark', 'My bike', 'Rider', 'Movable']
+        self.classes = ['Goal Bar', 'Referee', 'Advertisement', 'Ground', 'Ball', 'Coaches & Officials', 'Audience',
+                        'Goalkeeper A', 'Goalkeeper B', 'Team A', 'Team B']
+
         # 加载所有图片文件，并对文件进行排序
         self.files = list(sorted(os.listdir(os.path.join(root, 'images'))))
         self.imgs = [self.files[i] for i in range(len(self.files)) if i % 3 == 0]
@@ -31,7 +33,8 @@ class MotorcycleNightRideDataset(torch.utils.data.Dataset):
 
 
 if __name__ == '__main__':
-    classes = ['Undrivable', 'Road', 'Lanemark', 'My bike', 'Rider', 'Movable']
+    classes = ['Goal Bar', 'Referee', 'Advertisement', 'Ground', 'Ball', 'Coaches & Officials', 'Audience',
+                        'Goalkeeper A', 'Goalkeeper B', 'Team A', 'Team B']
     num_classes = len(classes)
     print(len(classes))
 
@@ -51,14 +54,14 @@ if __name__ == '__main__':
     #     colors.append(c[1])
     #     colors.append(c[2])
 
-    root = '../../datasets/Motorcycle Night Ride'
-    dataset = MotorcycleNightRideDataset(root)
+    root = '../../datasets/Football Player Segmentation'
+    dataset = FootballPlayerSegmentationDataset(root)
     print(dataset[1])
     x, y = dataset[1]
     x.show()
     # y.convert('P')
     # y.putpalette(colors)
     import numpy as np
+
     y_arr = np.asarray(y)
     y.show()
-

@@ -4,18 +4,19 @@ import time
 import torch
 
 import utils
-from deeplabv3.dataset import MotorcycleNightRideDataset
+from deeplabv3.dataset import FootballPlayerSegmentationDataset
 from engine import train_one_epoch, evaluate, criterion
 from presets import SegmentationPresetTrain, SegmentationPresetEval
 from model import get_model_sematic_segmentation
 
-DATASET_ROOT_PATH = '../../datasets/Motorcycle Night Ride'
+DATASET_ROOT_PATH = '../../datasets/Football Player Segmentation'
 DEFAULT_EPOCHS = 50
 DEFAULT_BATCH_SIZE = 4
 DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEFAULT_SAVE_PATH = 'data/model.pth'
 DEFAULT_WORKERS = 16
-classes = ['Undrivable', 'Road', 'Lanemark', 'My bike', 'Rider', 'Movable']
+classes = ['Goal Bar', 'Referee', 'Advertisement', 'Ground', 'Ball', 'Coaches & Officials', 'Audience',
+                        'Goalkeeper A', 'Goalkeeper B', 'Team A', 'Team B']
 
 
 def get_dataloader(opt):
@@ -25,14 +26,14 @@ def get_dataloader(opt):
     :return:
     """
     # 使用数据集
-    train_data = MotorcycleNightRideDataset(DATASET_ROOT_PATH,
-                                            transforms=SegmentationPresetTrain(base_size=520, crop_size=480))
-    test_data = MotorcycleNightRideDataset(DATASET_ROOT_PATH, transforms=SegmentationPresetEval(base_size=520))
+    train_data = FootballPlayerSegmentationDataset(DATASET_ROOT_PATH,
+                                                   transforms=SegmentationPresetTrain(base_size=520, crop_size=480))
+    test_data = FootballPlayerSegmentationDataset(DATASET_ROOT_PATH, transforms=SegmentationPresetEval(base_size=520))
 
     # 划分数据集为训练集与测试集
     indices = torch.randperm(len(train_data)).tolist()
-    train_data = torch.utils.data.Subset(train_data, indices[:-50])
-    test_data = torch.utils.data.Subset(test_data, indices[-50:])
+    train_data = torch.utils.data.Subset(train_data, indices[:-10])
+    test_data = torch.utils.data.Subset(test_data, indices[-10:])
 
     # 定义数据加载器
     train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=opt.batch_size, shuffle=True,
